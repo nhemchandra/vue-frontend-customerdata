@@ -1,12 +1,13 @@
 <template>
   <form @submit.prevent="submitForm">
-    <div class="form-control">
+    <div class="form-control" :class="{invalid: firstNameValidity === 'invalid'}">
       <label for="first-name">First Name</label>
-      <input id="first-name" name="first-name" type="text" />
+      <input id="first-name" name="first-name" type="text" v-model.trim="firstName" @blur="validateInput"/>
+      <p v-if="firstNameValidity === 'invalid'">"Please enter a valid firstname!"</p>
     </div>
     <div class="form-control">
       <label for="last-name">Last Name</label>
-      <input id="last-name" name="last-name" type="text" />
+      <input id="last-name" name="last-name" type="text" v-model.trim="userAge"/>
     </div>
     <div class="form-control">
       <label for="age">Your Age (Years)</label>
@@ -72,11 +73,11 @@
   <div class="form-control">
       <h2>Investment Tenure</h2>
       <div>
-        <input id="shortterm" name="tenure" type="radio" />
+        <input id="shortterm" name="tenure" value="shortterm" type="radio" v-model="tenure"/>
         <label for="shortterm">Short Term</label>
       </div>
       <div>
-        <input id="longterm" name="tenure" type="radio" />
+        <input id="longterm" name="tenure" value="longterm" type="radio" v-model="tenure"/>
         <label for="longterm">Long Term</label>
       </div>
     </div>
@@ -84,15 +85,15 @@
  <div class="form-control">
       <h2>Investment Style</h2>
       <div>
-        <input id="agrressive" name="tenure" type="radio" />
+        <input id="agrressive" name="style" type="radio" value="aggressive" v-model="style"/>
         <label for="aggressive">Aggressive</label>
       </div>
       <div>
-        <input id="moderate" name="tenure" type="radio" />
+        <input id="moderate" name="style" type="radio" value="moderate" v-model="style"/>
         <label for="moderate">Moderate</label>
       </div>
       <div>
-        <input id="riskfree" name="tenure" type="radio" />
+        <input id="riskfree" name="style" type="radio" value="norisk" v-model="style"/>
         <label for="riskfree">No Risk</label>
       </div>
     </div>
@@ -100,45 +101,48 @@
     <div class="form-control">
       <h2>Product Types Interested</h2>
       <div>
-        <input id="banking" name="interest" type="checkbox" />
+        <input id="banking" name="interest" type="checkbox" value="banking" v-model="interest"/>
         <label for="banking">Banking</label>
       </div>
       <div>
-        <input id="auto" name="interest" type="checkbox" />
+        <input id="auto" name="interest" type="checkbox" value="auto" v-model="interest"/>
         <label for="auto">Auto</label>
       </div>
       <div>
-        <input id="mortgage" name="interest" type="checkbox" />
+        <input id="mortgage" name="interest" type="checkbox" value="mortgage" v-model="interest"/>
         <label for="mortgage">Mortgage</label>
       </div>
       <div>
-        <input id="moneymarket" name="interest" type="checkbox" />
+        <input id="moneymarket" name="interest" type="checkbox" value= "moneymarkets" v-model="interest"/>
         <label for="moneymarket">Money Markets</label>
       </div>
       <div>
-        <input id="trading" name="interest" type="checkbox" />
+        <input id="trading" name="interest" type="checkbox" value="trading" v-model="interest"/>
         <label for="trading">Self Ditrected Trading</label>
       </div>
-
     </div>
-
     <div class="form-control">
       <label for="email">Email</label>
       <input id="email" name="email" type="email" />
     </div>
     <div class="form-control">
       <label for="referrer">How did you hear about us?</label>
-      <select id="referrer" name="referrer">
+      <select id="referrer" name="referrer" v-model="referrer">
         <option value="google">Google</option>
         <option value="wom">Word of mouth</option>
         <option value="newspaper">Newspaper</option>
-        <option value="newspaper">Facebook</option>
-        <option value="newspaper">Twitter</option>
-        <option value="newspaper">TV Commercial</option>
+        <option value="facebook">Facebook</option>
+        <option value="twitter">Twitter</option>
+        <option value="tv-add">TV Commercial</option>
       </select>
     </div>
-
-    
+    <div class="form-control">
+        <rating-control v-model="rating"></rating-control> 
+    </div>
+    <div class="form-control"> 
+        <input type="checkbox" id="confirm-terms" name="confirm-terms" v-model="confirm" />
+        <label for="confirm-terms"> Agree to terms of use?</label>
+    </div>
     <div>
       <button>Submit</button>
     </div>
@@ -147,11 +151,59 @@
 
 
 <script>
+import RatingControl from './RatingControl.vue';
 export default {
+  components: {
+    RatingControl
+  },
+  data() {
+    return {
+      firstName: '',
+      userAge: null,
+      referrer: 'wom',
+      interest: [],
+      tenure: null,
+      style: null,
+      confirm: false,
+      rating: null,
+      firstNameValidity: 'pending'
+    };
+  },
   methods: {
-      submitForm() {}
-  }
+      submitForm() {
+        console.log('firstname: ' + this.firstName);
+        this.firstName = '';
+        console.log('User age:');
+        console.log(this.userAge);
+        this.userAge = null;
+        console.log('Referrer: ' + this.referrer);
+        this.referrer = 'wom';
+        console.log('Products Interest: ');
+        console.log(this.interest);
+        console.log('tenure: ');
+        console.log(this.tenure);
+        console.log('style: ');
+        console.log(this.style);
+        this.interest = [];
+        this.tenure = null;
+        this.style = null;
+        console.log('Confirm?');
+        console.log(this.confirm);
+        this.confirm = false;
+        console.log('Rating');
+        console.log(this.rating);
+        this.rating = null;
+      },
 
+      validateInput() {
+        if (this.firstName === '') {
+           this.firstNameValidity = 'invalid';
+        }
+        else {
+           this.firstNameValidity = 'valid';
+        }
+      }
+    }
 }
 </script>
 
@@ -168,6 +220,14 @@ form {
 
 .form-control {
   margin: 0.5rem 0;
+}
+
+.form-control.invalid input {
+  border-color: red;
+}
+
+.form-control.invalid label {
+  color: red;
 }
 
 label {
