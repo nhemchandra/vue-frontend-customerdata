@@ -1,17 +1,23 @@
 <template>
   <form @submit.prevent="submitForm">
+    <div class="form-control">
+      <label for="customer-id">Customer ID</label>
+      <input id="customer-id" name="customer-id" type="text" />
+    </div>
     <div class="form-control" :class="{invalid: firstNameValidity === 'invalid'}">
       <label for="first-name">First Name</label>
-      <input id="first-name" name="first-name" type="text" v-model.trim="firstName" @blur="validateInput"/>
-      <p v-if="firstNameValidity === 'invalid'">"Please enter a valid firstname!"</p>
+      <input id="first-name" name="first-name" type="text" v-model.trim="firstName" @blur="validatefirstName"/>
+      <p v-if="firstNameValidity === 'invalid'">"Please enter a valid First name!"</p>
     </div>
-    <div class="form-control">
+    <div class="form-control" :class="{invalid: lastNameValidity === 'invalid'}">
       <label for="last-name">Last Name</label>
-      <input id="last-name" name="last-name" type="text" v-model.trim="userAge"/>
+      <input id="last-name" name="last-name" type="text" v-model.trim="lastName" @blur="validatelastName"/>
+      <p v-if="lastNameValidity === 'invalid'">"Please enter a valid Last name!"</p>
     </div>
-    <div class="form-control">
+    <div class="form-control" :class="{invalid: ageValidity === 'invalid'}">
       <label for="age">Your Age (Years)</label>
-      <input id="age" name="age" type="number" min="19" />
+      <input id="age" name="age" type="number" min="19" max="125" v-model.trim="userAge" @blur="validateage"/>
+      <p v-if="ageValidity === 'invalid'">"Please enter valid Age!"</p>
     </div>
     <div class="form-control">
       <label for="children">Number of Children</label>
@@ -158,23 +164,29 @@ export default {
   },
   data() {
     return {
+      invalidInput: false,
       firstName: '',
-      userAge: null,
+      lastName: '',
+      userAge: '',
       referrer: 'wom',
       interest: [],
       tenure: null,
       style: null,
       confirm: false,
       rating: null,
-      firstNameValidity: 'pending'
+      firstNameValidity: 'pending',
+      lastNameValidity: 'pending',
+      ageValidity: 'pending',
     };
   },
+  emits: ['survey-submit'],
   methods: {
       submitForm() {
         console.log('firstname: ' + this.firstName);
         this.firstName = '';
-        console.log('User age:');
-        console.log(this.userAge);
+        console.log('lastname: ' + this.lastName);
+        this.lastName = '';
+        console.log('User age: ' + this.userAge);
         this.userAge = null;
         console.log('Referrer: ' + this.referrer);
         this.referrer = 'wom';
@@ -195,14 +207,66 @@ export default {
         this.rating = null;
       },
 
-      validateInput() {
+      validatefirstName() {
         if (this.firstName === '') {
            this.firstNameValidity = 'invalid';
         }
         else {
            this.firstNameValidity = 'valid';
         }
+      },
+
+      validatelastName() {
+        if (this.lastName === '') {
+           this.lastNameValidity = 'invalid';
+        }
+        else {
+           this.lastNameValidity = 'valid';
+        }
+      },
+
+      validateage() {
+        if (this.userAge === '') {
+           this.ageValidity = 'invalid';
+        }
+        else {
+           this.ageValidity = 'valid';
+        }
+      },
+
+submitSurvey() {
+      if (this.firstName === '' || this.lastName === '' || !this.rating | this.age === '') {
+        this.invalidInput = true;
+        return;
       }
+      this.invalidInput = false;
+
+      this.$emit('survey-submit', {
+        firstName: this.firstName,
+        lastName: this.lastName,
+        rating: this.rating,
+        age: this.userAge,
+      });
+
+      fetch('https://vblqw87bp5.execute-api.us-east-1.amazonaws.com/prod/customer',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          customer_id: this.customer-id,
+          firstName: this.firstName,
+          lastName: this.lastName,
+          rating: this.rating,
+          age: this.userAge
+        }),
+      });
+      this.firstName = '';
+      this.lastName = '';
+      this.rating = null;
+      this.userAge = null;
+    }
+
     }
 }
 </script>
